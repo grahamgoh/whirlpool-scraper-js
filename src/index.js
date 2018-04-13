@@ -1,3 +1,4 @@
-const scrapeNews = require('./newsScraper');
+// const scrapeNews = require('.scrapers/newsScraper');
+const scrapeForums = require('./scrapers/forumScraper');
 
-scrapeNews().then(r => console.log(r));
+scrapeForums().then(r => console.log(r));

@@ -1,8 +1,7 @@
 const cheerio = require('cheerio');
 const axios = require('axios');
-const { zip, flatten } = require('./utils');
-
-const whirlpoolUrl = 'https://whirlpool.net.au/';
+const { zip, flatten } = require('../utils');
+const { newsUrl } = require('../constants');
 
 function extractTitleLinkPublisher($, el) {
   return $(el)
@@ -43,7 +42,7 @@ function extractNewsBlurb($, el) {
 }
 
 async function scrapeNews() {
-  const response = await axios.get(whirlpoolUrl);
+  const response = await axios.get(newsUrl);
   const $ = cheerio.load(response.data);
   return $('.article.roundup.index')
     .map((i, el) => {
