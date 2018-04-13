@@ -56,7 +56,18 @@ function extractPages($, e) {
 
   return pages ? pages.split(',')[1].replace(');', '') : '1';
 }
-
+function extractThreadGroups($) {
+  return $('#threads thead select option', '#content')
+    .slice(1)
+    .map((i, e) => {
+      const title = $(e)
+        .text()
+        .trim();
+      const id = $(e).attr('value');
+      return { title, id };
+    })
+    .get();
+}
 async function scrapeThreads(forumId) {
   const response = await axios.get(`${threadUrl}${forumId}`);
   const $ = cheerio.load(response.data);
@@ -94,6 +105,7 @@ async function scrapeThreads(forumId) {
     })
     .get();
 
+  const threadGroups = extractThreadGroups($);
   const numberOfPagesInForum = $('.footbar .pagination option')
     .last()
     .text();
@@ -102,7 +114,7 @@ async function scrapeThreads(forumId) {
     .last()
     .text();
 
-  return { forumTitle, numberOfPagesInForum, threads };
+  return { forumTitle, numberOfPagesInForum, threadGroups, threads };
 }
 
 module.exports = scrapeThreads;
