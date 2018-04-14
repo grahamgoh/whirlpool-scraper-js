@@ -1,6 +1,52 @@
 const cheerio = require('cheerio');
-const axios = require('axios');
-const { threadUrl } = require('../constants');
+
+async function scrapeThreads(html) {
+  const $ = cheerio.load(html);
+  const threads = $('#threads tbody tr', '#content')
+    .map((i, e) => {
+      const threadStatus = extractThreadStatus($, e);
+
+      const aTag = $(e).find('a.title');
+      const threadTitle = aTag.text();
+      const threadUrl = aTag.attr('href');
+
+      const numberOfReplies = $(e)
+        .find('.reps')
+        .text();
+
+      const numberOfSeens = $(e)
+        .find('.reads')
+        .text();
+
+      const authorInfo = extractAuthorInfo($, e);
+      const lastPostedUserInfo = extractLatestPostedUserInfo($, e);
+      const threadGroup = extractThreadGroupInfo($, e);
+      const numberOfPagesInThread = extractPages($, e);
+      return {
+        threadStatus,
+        threadTitle,
+        threadUrl,
+        numberOfReplies,
+        numberOfSeens,
+        authorInfo,
+        lastPostedUserInfo,
+        threadGroup,
+        numberOfPagesInThread
+      };
+    })
+    .get();
+
+  const threadGroups = extractThreadGroups($);
+  const numberOfPagesInForum = $('.footbar .pagination option')
+    .last()
+    .text();
+
+  const forumTitle = $('#upperbar .breadcrumb span[itemprop="name"]')
+    .last()
+    .text();
+
+  return { forumTitle, numberOfPagesInForum, threadGroups, threads };
+}
 
 function extractThreadStatus($, e) {
   const isSticky = $(e).hasClass('sticky');
@@ -56,6 +102,7 @@ function extractPages($, e) {
 
   return pages ? pages.split(',')[1].replace(');', '') : '1';
 }
+
 function extractThreadGroups($) {
   return $('#threads thead select option', '#content')
     .slice(1)
@@ -67,54 +114,6 @@ function extractThreadGroups($) {
       return { title, id };
     })
     .get();
-}
-async function scrapeThreads(forumId) {
-  const response = await axios.get(`${threadUrl}${forumId}`);
-  const $ = cheerio.load(response.data);
-  const threads = $('#threads tbody tr', '#content')
-    .map((i, e) => {
-      const threadStatus = extractThreadStatus($, e);
-
-      const aTag = $(e).find('a.title');
-      const threadTitle = aTag.text();
-      const threadUrl = aTag.attr('href');
-
-      const numberOfReplies = $(e)
-        .find('.reps')
-        .text();
-
-      const numberOfSeens = $(e)
-        .find('.reads')
-        .text();
-
-      const authorInfo = extractAuthorInfo($, e);
-      const lastPostedUserInfo = extractLatestPostedUserInfo($, e);
-      const threadGroup = extractThreadGroupInfo($, e);
-      const numberOfPagesInThread = extractPages($, e);
-      return {
-        threadStatus,
-        threadTitle,
-        threadUrl,
-        numberOfReplies,
-        numberOfSeens,
-        authorInfo,
-        lastPostedUserInfo,
-        threadGroup,
-        numberOfPagesInThread
-      };
-    })
-    .get();
-
-  const threadGroups = extractThreadGroups($);
-  const numberOfPagesInForum = $('.footbar .pagination option')
-    .last()
-    .text();
-
-  const forumTitle = $('#upperbar .breadcrumb span[itemprop="name"]')
-    .last()
-    .text();
-
-  return { forumTitle, numberOfPagesInForum, threadGroups, threads };
 }
 
 module.exports = scrapeThreads;

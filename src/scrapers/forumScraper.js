@@ -1,7 +1,20 @@
 const cheerio = require('cheerio');
-const axios = require('axios');
 const { zip } = require('../utils');
-const { forumUrl } = require('../constants');
+
+async function scrapeForums(html) {
+  const $ = cheerio.load(html);
+  const results = $('.column', '#forumindex')
+    .map((i, e) => {
+      const forumGroupTitle = extractForumGroupTitle($, e);
+      const subForums = extractSubForums($, e);
+      const mappedSubForums = subForums.map(i => i.get());
+      const results = zip(forumGroupTitle, mappedSubForums);
+      return results.map(x => ({ forumGroup: x[0], forums: x[1] }));
+    })
+    .get();
+
+  return results;
+}
 
 function extractForumGroupTitle($, e) {
   return $(e)
@@ -24,22 +37,6 @@ function extractSubForums($, e) {
         });
     })
     .get();
-}
-
-async function scrapeForums() {
-  const response = await axios.get(forumUrl);
-  const $ = cheerio.load(response.data);
-  const results = $('.column', '#forumindex')
-    .map((i, e) => {
-      const forumGroupTitle = extractForumGroupTitle($, e);
-      const subForums = extractSubForums($, e);
-      const mappedSubForums = subForums.map(i => i.get());
-      const results = zip(forumGroupTitle, mappedSubForums);
-      return results.map(x => ({ forumGroup: x[0], forums: x[1] }));
-    })
-    .get();
-
-  return results;
 }
 
 module.exports = scrapeForums;
