@@ -1,7 +1,7 @@
 const cheerio = require('cheerio');
 const { zip } = require('../utils');
 
-async function scrapeForums(html) {
+function scrapeForums(html) {
   const $ = cheerio.load(html);
   const results = $('.column', '#forumindex')
     .map((i, e) => {

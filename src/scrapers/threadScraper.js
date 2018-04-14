@@ -1,6 +1,6 @@
 const cheerio = require('cheerio');
 
-async function scrapeThreads(html) {
+function scrapeThreads(html) {
   const $ = cheerio.load(html);
   const threads = $('#threads tbody tr', '#content')
     .map((i, e) => {
