@@ -15,18 +15,18 @@ async function getForums() {
   return scrapeForums(response.data);
 }
 
-async function getThreads(forumId) {
-  const response = await axios.get(`${threadUrl}${forumId}`);
+async function getThreads(forumId, page = 1) {
+  const response = await axios.get(`${threadUrl}${forumId}&p=${page}`);
   return scrapeThreads(response.data);
 }
 
-async function getPosts(threadId) {
-  const response = await axios.get(`${postUrl}${threadId}`);
+async function getPosts(threadId, page = 1) {
+  const response = await axios.get(`${postUrl}${threadId}&p=${page}`);
   return scrapePosts(response.data);
 }
 
-// scrapeForums().then(r => console.log(r));
-// scrapeThreads(92).then(r => console.log(r));
-getPosts(2483257); //.then(r => console.log(r));
+// getForums().then(r => console.log(r));
+getThreads(140).then(r => console.log(r));
+// getPosts(2483257); //.then(r => console.log(r));
 
 module.exports = { getNews, getForums, getThreads, getPosts };
